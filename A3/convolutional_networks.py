@@ -451,81 +451,80 @@ class DeepConvNet(object):
     # to ones and zeros respectively.                                          #           
     ############################################################################
     # Replace "pass" statement with your code
-    # for i in range(self.num_layers-1):
-    #   W_name = 'W' + str(i+1)
-    #   b_name = 'b' + str(i+1)
-    #   if i==0:
-    #     if weight_scale == 'kaiming':
-    #       self.params[W_name] = kaiming_initializer(input_dims[0], num_filters[i], K=3, dtype=self.dtype, device=device)
-    #       self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
+    for i in range(self.num_layers-1):
+      W_name = 'W' + str(i+1)
+      b_name = 'b' + str(i+1)
+      if i==0:
+        if weight_scale == 'kaiming':
+          self.params[W_name] = kaiming_initializer(input_dims[0], num_filters[i], K=3, dtype=self.dtype, device=device)
+          self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
 
-    #     else :   
-    #       self.params[W_name] = torch.randn(num_filters[i], input_dims[0], 3, 3, dtype=self.dtype, device=device) * weight_scale
-    #       self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
+        else :   
+          self.params[W_name] = torch.randn(num_filters[i], input_dims[0], 3, 3, dtype=self.dtype, device=device) * weight_scale
+          self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
 
-    #     if self.batchnorm:
-    #       gamma_name = 'gamma'+str(i+1) 
-    #       self.params[gamma_name] = torch.ones(num_filters[i], dtype=dtype, device=device)
-    #       beta_name = 'beta'+str(i+1) 
-    #       self.params[beta_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
-    #   else :
-    #     if weight_scale == 'kaiming':
-    #       self.params[W_name] = kaiming_initializer(Din = num_filters[i-1], Dout = num_filters[i], K=3, dtype=self.dtype, device=device)
-    #       self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
+        if self.batchnorm:
+          gamma_name = 'gamma'+str(i+1) 
+          self.params[gamma_name] = torch.ones(num_filters[i], dtype=dtype, device=device)
+          beta_name = 'beta'+str(i+1) 
+          self.params[beta_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
+      else :
+        if weight_scale == 'kaiming':
+          self.params[W_name] = kaiming_initializer(Din = num_filters[i-1], Dout = num_filters[i], K=3, dtype=self.dtype, device=device)
+          self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
 
-    #     else:
-    #       self.params[W_name] = torch.randn(num_filters[i], num_filters[i-1], 3, 3, dtype=self.dtype, device=device) * weight_scale
-    #       self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
+        else:
+          self.params[W_name] = torch.randn(num_filters[i], num_filters[i-1], 3, 3, dtype=self.dtype, device=device) * weight_scale
+          self.params[b_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
 
-    #     if self.batchnorm:
-    #       gamma_name = 'gamma'+str(i+1) 
-    #       self.params[gamma_name] = torch.ones(num_filters[i], dtype=dtype, device=device)
-    #       beta_name = 'beta'+str(i+1) 
-    #       self.params[beta_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
+        if self.batchnorm:
+          gamma_name = 'gamma'+str(i+1) 
+          self.params[gamma_name] = torch.ones(num_filters[i], dtype=dtype, device=device)
+          beta_name = 'beta'+str(i+1) 
+          self.params[beta_name] = torch.zeros(num_filters[i], dtype=dtype, device=device)
 
-    # W_name = 'W' + str(self.num_layers)
-    # b_name = 'b' + str(self.num_layers)
+    W_name = 'W' + str(self.num_layers)
+    b_name = 'b' + str(self.num_layers)
 
-    # H= input_dims[1]//(2**len(self.max_pools))
-    # W = H
-    
-    # if weight_scale == 'kaiming':
-    #   self.params[W_name] = kaiming_initializer(num_filters[-1]*H*W, num_classes, dtype=self.dtype, device=device)
-    # else :
-    #   self.params[W_name] = torch.randn(num_filters[-1]*H*W, num_classes, dtype=self.dtype, device=device) * weight_scale
-    # self.params[b_name] = torch.zeros(num_classes, dtype=dtype, device=device) 
-
-    ####### Ans###############3
-    C, H, W = input_dims
-    cat_flr = [C]
-    cat_flr += num_filters
-    # print("filters are", num_filters)
-    # print("max pool is", self.max_pools)
-    
-    for l in range(self.num_layers - 1):
-      num_f = num_filters[l]
-      if weight_scale == 'kaiming':
-        self.params['W' + str(l + 1)] =  kaiming_initializer(cat_flr[l], num_f, K=3, relu=True, device=device,
-                        dtype=dtype)
-      else:
-        self.params['W' + str(l + 1)] =  weight_scale * torch.randn(num_f, cat_flr[l], 3, 3, dtype=dtype, device=device)
-      self.params['b'+ str(l + 1)] = torch.zeros(num_f, dtype=dtype, device=device)
-      if self.batchnorm:
-        self.params['gamma'+str(l+1)] = torch.ones(num_f, dtype=dtype, device=device)
-        self.params['beta' +str(l+1)] = torch.zeros(num_f, dtype=dtype, device=device)
-      
-      
-    # final layer
-    num_max_pool = len(max_pools)
-    final_input_dim = num_filters[-1] * (H // (2 ** num_max_pool))* (W // (2 ** num_max_pool))
-    # final layer size is reduced
+    H= input_dims[1]//(2**len(self.max_pools))
+    W = H
     
     if weight_scale == 'kaiming':
-      self.params["W"+ str(self.num_layers)] = \
-        kaiming_initializer(final_input_dim, num_classes, relu=False, device=device,dtype=dtype)
-    else:
-      self.params["W"+ str(self.num_layers)] = weight_scale * torch.randn(final_input_dim, num_classes, dtype=dtype, device=device)
-    self.params["b"+ str(self.num_layers)] = torch.zeros(num_classes, dtype=dtype, device=device)
+      self.params[W_name] = kaiming_initializer(num_filters[-1]*H*W, num_classes, dtype=self.dtype, device=device)
+    else :
+      self.params[W_name] = torch.randn(num_filters[-1]*H*W, num_classes, dtype=self.dtype, device=device) * weight_scale
+    self.params[b_name] = torch.zeros(num_classes, dtype=dtype, device=device) 
+##################################
+#     C, H, W = input_dims
+#     cat_flr = [C]
+#     cat_flr += num_filters
+#     # print("filters are", num_filters)
+#     # print("max pool is", self.max_pools)
+    
+#     for l in range(self.num_layers - 1):
+#       num_f = num_filters[l]
+#       if weight_scale == 'kaiming':
+#         self.params['W' + str(l + 1)] =  kaiming_initializer(cat_flr[l], num_f, K=3, relu=True, device=device,
+#                         dtype=dtype)
+#       else:
+#         self.params['W' + str(l + 1)] =  weight_scale * torch.randn(num_f, cat_flr[l], 3, 3, dtype=dtype, device=device)
+#       self.params['b'+ str(l + 1)] = torch.zeros(num_f, dtype=dtype, device=device)
+#       if self.batchnorm:
+#         self.params['gamma'+str(l+1)] = torch.ones(num_f, dtype=dtype, device=device)
+#         self.params['beta' +str(l+1)] = torch.zeros(num_f, dtype=dtype, device=device)
+      
+      
+#     # final layer
+#     num_max_pool = len(max_pools)
+#     final_input_dim = num_filters[-1] * (H // (2 ** num_max_pool))* (W // (2 ** num_max_pool))
+#     # final layer size is reduced
+    
+#     if weight_scale == 'kaiming':
+#       self.params["W"+ str(self.num_layers)] = \
+#         kaiming_initializer(final_input_dim, num_classes, relu=False, device=device,dtype=dtype)
+#     else:
+#       self.params["W"+ str(self.num_layers)] = weight_scale * torch.randn(final_input_dim, num_classes, dtype=dtype, device=device)
+#     self.params["b"+ str(self.num_layers)] = torch.zeros(num_classes, dtype=dtype, device=device)
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -625,99 +624,99 @@ class DeepConvNet(object):
     # or the convolutional sandwich layers, to simplify your implementation.   #
     ############################################################################
     # Replace "pass" statement with your code
-    # max_pool_num = 0
-    # caches = []
-    # max_pool_caches = []
-    # out = X
-    # for i in range(self.num_layers - 1):
-    #   # print(i)
-    #   # print(max_pool_num)
-    #   W_name = 'W' + str(i+1)
-    #   b_name = 'b' + str(i+1)
+    max_pool_num = 0
+    caches = []
+    max_pool_caches = []
+    out = X
+    for i in range(self.num_layers - 1):
+      # print(i)
+      # print(max_pool_num)
+      W_name = 'W' + str(i+1)
+      b_name = 'b' + str(i+1)
 
-    #   W = self.params[W_name]
-    #   b = self.params[b_name]
+      W = self.params[W_name]
+      b = self.params[b_name]
 
-    #   if max_pool_num > len(self.max_pools)-1:
-    #     max_pool_num = 0
+      if max_pool_num > len(self.max_pools)-1:
+        max_pool_num = 0
 
-    #   if self.batchnorm:
-    #     gamma_name = 'gamma'+str(i+1) 
-    #     beta_name = 'beta'+str(i+1)
-    #     gamma = self.params[gamma_name]
-    #     beta = self.params[beta_name]
+      if self.batchnorm:
+        gamma_name = 'gamma'+str(i+1) 
+        beta_name = 'beta'+str(i+1)
+        gamma = self.params[gamma_name]
+        beta = self.params[beta_name]
 
-    #     if self.max_pools[max_pool_num] == i:
-    #       max_pool_num += 1
-    #       out, cache = Conv_BatchNorm_ReLU_Pool.forward(out, W, b, gamma, beta, conv_param, bn_param, pool_param)
-    #       max_pool_caches.append(cache)
+        if self.max_pools[max_pool_num] == i:
+          max_pool_num += 1
+          out, cache = Conv_BatchNorm_ReLU_Pool.forward(out, W, b, gamma, beta, conv_param, bn_param, pool_param)
+          max_pool_caches.append(cache)
 
-    #     else:
-    #       out, cache = Conv_BatchNorm_ReLU.forward(out, W, b, gamma, beta, conv_param, bn_param)
-    #       caches.append(cache)
+        else:
+          out, cache = Conv_BatchNorm_ReLU.forward(out, W, b, gamma, beta, conv_param, bn_param)
+          caches.append(cache)
 
-    #   else:
-    #     if self.max_pools[max_pool_num] == i:
-    #       max_pool_num += 1
-    #       out, cache = Conv_ReLU_Pool.forward(out, W, b, conv_param, pool_param)
-    #       max_pool_caches.append(cache)
+      else:
+        if self.max_pools[max_pool_num] == i:
+          max_pool_num += 1
+          out, cache = Conv_ReLU_Pool.forward(out, W, b, conv_param, pool_param)
+          max_pool_caches.append(cache)
         
-    #     else:
-    #       out, cache = Conv_ReLU.forward(out, W, b, conv_param)
-    #       caches.append(cache)
+        else:
+          out, cache = Conv_ReLU.forward(out, W, b, conv_param)
+          caches.append(cache)
 
       
     
-    # out_fc = out.reshape(out.shape[0], -1)
-    # W = self.params['W'+str(self.num_layers)]
-    # b = self.params['b' + str(self.num_layers)]
-    # out_fc, cache = Linear.forward(out_fc, W, b)
-    # caches.append(cache)
-
-    # scores = out_fc
-    ####ANS###
-    h_out = X
-    caches = []
-    max_pool_set = set()
-    for p in self.max_pools:
-      max_pool_set.add(p)
-    # print("initially, out has size", h_out.shape)
-    
-    for l in range(self.num_layers - 1):
-      w = self.params['W' + str(l + 1)]
-      b = self.params['b' + str(l + 1)]
-      # print('now, h_out has shape', h_out.shape)
-      if l in max_pool_set:
-        # it is maxpooling mode, conv-relu-pool
-        if self.batchnorm:
-          gamma = self.params['gamma' + str(l + 1)]
-          beta = self.params['beta' + str(l + 1)]
-          bn_param = self.bn_params[l]
-          h_out, cache = Conv_BatchNorm_ReLU_Pool.forward(h_out, w, b, gamma, \
-                                                     beta, conv_param, bn_param, pool_param)
-          caches.append(cache)
-        else:
-          h_out, cache = Conv_ReLU_Pool.forward(h_out, w, b, conv_param, pool_param)
-          caches.append(cache)
-      else:
-        # no maxpool mode, conv-relu
-        if self.batchnorm:
-          gamma = self.params['gamma' + str(l + 1)]
-          beta = self.params['beta' + str(l + 1)]
-          bn_param = self.bn_params[l]
-          h_out, cache = Conv_BatchNorm_ReLU.forward(h_out, w, b, gamma, beta, conv_param, bn_param)
-          caches.append(cache)
-        else:
-          h_out, cache = Conv_ReLU.forward(h_out, w, b, conv_param)
-          caches.append(cache)
-
-    # then it is the last layer
-    w = self.params['W' + str(self.num_layers)]
+    out_fc = out.reshape(out.shape[0], -1)
+    W = self.params['W'+str(self.num_layers)]
     b = self.params['b' + str(self.num_layers)]
-    # print("after operation, out has size", h_out.shape)
-    # print("number of max pooling", len(self.max_pools))
-    scores, cache = Linear.forward(h_out, w, b)
+    out_fc, cache = Linear.forward(out_fc, W, b)
     caches.append(cache)
+
+    scores = out_fc
+###################################3
+#     h_out = X
+#     caches = []
+#     max_pool_set = set()
+#     for p in self.max_pools:
+#       max_pool_set.add(p)
+#     # print("initially, out has size", h_out.shape)
+    
+#     for l in range(self.num_layers - 1):
+#       w = self.params['W' + str(l + 1)]
+#       b = self.params['b' + str(l + 1)]
+#       # print('now, h_out has shape', h_out.shape)
+#       if l in max_pool_set:
+#         # it is maxpooling mode, conv-relu-pool
+#         if self.batchnorm:
+#           gamma = self.params['gamma' + str(l + 1)]
+#           beta = self.params['beta' + str(l + 1)]
+#           bn_param = self.bn_params[l]
+#           h_out, cache = Conv_BatchNorm_ReLU_Pool.forward(h_out, w, b, gamma, \
+#                                                      beta, conv_param, bn_param, pool_param)
+#           caches.append(cache)
+#         else:
+#           h_out, cache = Conv_ReLU_Pool.forward(h_out, w, b, conv_param, pool_param)
+#           caches.append(cache)
+#       else:
+#         # no maxpool mode, conv-relu
+#         if self.batchnorm:
+#           gamma = self.params['gamma' + str(l + 1)]
+#           beta = self.params['beta' + str(l + 1)]
+#           bn_param = self.bn_params[l]
+#           h_out, cache = Conv_BatchNorm_ReLU.forward(h_out, w, b, gamma, beta, conv_param, bn_param)
+#           caches.append(cache)
+#         else:
+#           h_out, cache = Conv_ReLU.forward(h_out, w, b, conv_param)
+#           caches.append(cache)
+
+#     # then it is the last layer
+#     w = self.params['W' + str(self.num_layers)]
+#     b = self.params['b' + str(self.num_layers)]
+#     # print("after operation, out has size", h_out.shape)
+#     # print("number of max pooling", len(self.max_pools))
+#     scores, cache = Linear.forward(h_out, w, b)
+#     caches.append(cache)
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -737,103 +736,103 @@ class DeepConvNet(object):
     # a factor of 0.5                                                          #
     ############################################################################
     # Replace "pass" statement with your code
-    # loss, dout = softmax_loss(scores, y)
-    # max_pool_num = len(self.max_pools) - 1 
+    loss, dout = softmax_loss(scores, y)
+    max_pool_num = len(self.max_pools) - 1 
 
-    # for i in range(self.num_layers, 0, -1):
-    #   W_name = 'W' + str(i)
-    #   b_name = 'b' + str(i)
-    #   W = self.params[W_name]
-    #   b = self.params[b_name]
-    #   print(i, '   ', W_name)
+    for i in range(self.num_layers, 0, -1):
+      W_name = 'W' + str(i)
+      b_name = 'b' + str(i)
+      W = self.params[W_name]
+      b = self.params[b_name]
+      print(i, '   ', W_name)
 
-    #   if i == self.num_layers:
-    #     loss += self.reg * torch.sum(W**2)
-    #     dx, grads[W_name], grads[b_name] = Linear.backward(dout, caches.pop())
-    #     grads[W_name] += self.reg * W
-    #     dx = dx.view(*out.size())
+      if i == self.num_layers:
+        loss += self.reg * torch.sum(W**2)
+        dx, grads[W_name], grads[b_name] = Linear.backward(dout, caches.pop())
+        grads[W_name] += self.reg * W
+        dx = dx.view(*out.size())
       
-    #   else:
-    #     if self.batchnorm:
-    #       gamma_name = 'gamma'+str(i) 
-    #       beta_name = 'beta'+str(i)
-    #       gamma = self.params[gamma_name]
-    #       beta = self.params[beta_name]
-
-    #       if self.max_pools[max_pool_num] == i-1:
-    #         max_pool_num -= 1
-    #         loss += self.reg * torch.sum(W**2)
-    #         cache = max_pool_caches.pop()
-    #         print(cache[3][3].grad)
-    #         dx, grads[W_name], grads[b_name], grads[gamma_name], grads[beta_name] = \
-    #           Conv_BatchNorm_ReLU_Pool.backward(dx, cache)
-    #         grads[W_name] += 2 * self.reg * W
-          
-    #       else:
-    #         loss += self.reg * torch.sum(W**2)
-    #         dx, grads[W_name], grads[b_name], grads[gamma_name], grads[beta_name] = \
-    #           Conv_BatchNorm_ReLU.backward(dx, caches.pop())
-    #         grads[W_name] += 2 * self.reg * W
-    #     else:
-    #       if self.max_pools[max_pool_num] == i-1:
-    #         max_pool_num -= 1
-    #         loss += self.reg * torch.sum(W**2)
-    #         dx, grads[W_name], grads[b_name] = Conv_ReLU_Pool.backward(dx, max_pool_caches.pop())
-    #         grads[W_name] += 2 * self.reg * W
-
-    #       else:
-    #         loss += self.reg * torch.sum(W**2)
-    #         dx, grads[W_name], grads[b_name] = Conv_ReLU.backward(dx, caches.pop())
-    #         grads[W_name] += 2 * self.reg * W
-    ###ans###
-    loss, d_out = softmax_loss(scores, y)
-    for l in range(self.num_layers):
-      w = self.params['W' + str(l+1)]
-      loss += self.reg * torch.sum(w ** 2)
-      
-   # for i in caches:
-      # print("caches size", len(i))
-      
-    # for the last layer, it is only Linear forward
-    d_out, dw, db = Linear.backward(d_out, caches.pop())
-    # w = self.params['W' + str(num_layers)]
-    # b = self.params['b' + str(num_layers)]
-    grads['W' + str(self.num_layers)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers)]
-    grads['b' + str(self.num_layers)] = db
-    
-    
-    
-    # p_idx should point to the end of max_pools
-    # p_idx -= 1
-    for l in range(0, self.num_layers-1):
-      # go to index 0
-      
-      if self.num_layers- 2 - l in max_pool_set:
-        # it is maxpooling mode, conv-relu-pool    
-        if self.batchnorm:
-          d_out, dw, db, dgamma, dbeta = Conv_BatchNorm_ReLU_Pool.backward(\
-                                          d_out, caches.pop())
-          grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
-          grads['b' + str(self.num_layers -1 - l)] = db
-          grads['gamma' + str(self.num_layers -1 - l)] = dgamma
-          grads['beta' + str(self.num_layers -1 - l)] = dbeta
-        else:
-          d_out, dw, db = Conv_ReLU_Pool.backward(d_out, caches.pop())
-          grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
-          grads['b' + str(self.num_layers -1 - l)] = db
       else:
-        # no maxpool mode, conv-relu
         if self.batchnorm:
-          d_out, dw, db, dgamma, dbeta = Conv_BatchNorm_ReLU.backward(\
-                                          d_out, caches.pop())
-          grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
-          grads['b' + str(self.num_layers -1 - l)] = db
-          grads['gamma' + str(self.num_layers -1 - l)] = dgamma
-          grads['beta' + str(self.num_layers -1 - l)] = dbeta
+          gamma_name = 'gamma'+str(i) 
+          beta_name = 'beta'+str(i)
+          gamma = self.params[gamma_name]
+          beta = self.params[beta_name]
+
+          if self.max_pools[max_pool_num] == i-1:
+            max_pool_num -= 1
+            loss += self.reg * torch.sum(W**2)
+            cache = max_pool_caches.pop()
+            print(cache[3][3].grad)
+            dx, grads[W_name], grads[b_name], grads[gamma_name], grads[beta_name] = \
+              Conv_BatchNorm_ReLU_Pool.backward(dx, cache)
+            grads[W_name] += 2 * self.reg * W
+          
+          else:
+            loss += self.reg * torch.sum(W**2)
+            dx, grads[W_name], grads[b_name], grads[gamma_name], grads[beta_name] = \
+              Conv_BatchNorm_ReLU.backward(dx, caches.pop())
+            grads[W_name] += 2 * self.reg * W
         else:
-          d_out, dw, db = Conv_ReLU.backward(d_out, caches.pop())
-          grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
-          grads['b' + str(self.num_layers -1 - l)] = db
+          if self.max_pools[max_pool_num] == i-1:
+            max_pool_num -= 1
+            loss += self.reg * torch.sum(W**2)
+            dx, grads[W_name], grads[b_name] = Conv_ReLU_Pool.backward(dx, max_pool_caches.pop())
+            grads[W_name] += 2 * self.reg * W
+
+          else:
+            loss += self.reg * torch.sum(W**2)
+            dx, grads[W_name], grads[b_name] = Conv_ReLU.backward(dx, caches.pop())
+            grads[W_name] += 2 * self.reg * W
+ #############################
+#     loss, d_out = softmax_loss(scores, y)
+#     for l in range(self.num_layers):
+#       w = self.params['W' + str(l+1)]
+#       loss += self.reg * torch.sum(w ** 2)
+      
+#    # for i in caches:
+#       # print("caches size", len(i))
+      
+#     # for the last layer, it is only Linear forward
+#     d_out, dw, db = Linear.backward(d_out, caches.pop())
+#     # w = self.params['W' + str(num_layers)]
+#     # b = self.params['b' + str(num_layers)]
+#     grads['W' + str(self.num_layers)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers)]
+#     grads['b' + str(self.num_layers)] = db
+    
+    
+    
+#     # p_idx should point to the end of max_pools
+#     # p_idx -= 1
+#     for l in range(0, self.num_layers-1):
+#       # go to index 0
+      
+#       if self.num_layers- 2 - l in max_pool_set:
+#         # it is maxpooling mode, conv-relu-pool    
+#         if self.batchnorm:
+#           d_out, dw, db, dgamma, dbeta = Conv_BatchNorm_ReLU_Pool.backward(\
+#                                           d_out, caches.pop())
+#           grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
+#           grads['b' + str(self.num_layers -1 - l)] = db
+#           grads['gamma' + str(self.num_layers -1 - l)] = dgamma
+#           grads['beta' + str(self.num_layers -1 - l)] = dbeta
+#         else:
+#           d_out, dw, db = Conv_ReLU_Pool.backward(d_out, caches.pop())
+#           grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
+#           grads['b' + str(self.num_layers -1 - l)] = db
+#       else:
+#         # no maxpool mode, conv-relu
+#         if self.batchnorm:
+#           d_out, dw, db, dgamma, dbeta = Conv_BatchNorm_ReLU.backward(\
+#                                           d_out, caches.pop())
+#           grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
+#           grads['b' + str(self.num_layers -1 - l)] = db
+#           grads['gamma' + str(self.num_layers -1 - l)] = dgamma
+#           grads['beta' + str(self.num_layers -1 - l)] = dbeta
+#         else:
+#           d_out, dw, db = Conv_ReLU.backward(d_out, caches.pop())
+#           grads['W' + str(self.num_layers -1 - l)] = dw + 2 * self.reg * self.params['W' + str(self.num_layers -1 - l)]
+#           grads['b' + str(self.num_layers -1 - l)] = db
 
 
         
