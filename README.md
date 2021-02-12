@@ -36,3 +36,7 @@ Adversarial examples
 Single Stage Detector\
 Two Stage Detector\
 YOLO, RCNN
+
+### 6. A6
+Variational Autoencoder\
+Generative Adversarial Networks\
